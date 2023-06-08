@@ -33,6 +33,21 @@ class GameBase {
     this.camera.position.z = 15;
   }
 
+  addLine() {
+    const material = new THREE.LineBasicMaterial({ color: 0x1da2d8 });
+    const points: THREE.Vector3[] = [];
+
+    points.push(new THREE.Vector3(-10, 0, 0));
+    points.push(new THREE.Vector3(0, 10, 0));
+    points.push(new THREE.Vector3(10, 0, 0));
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    const line = new THREE.Line(geometry, material);
+
+    this.addElementToScene(line);
+  }
+
   render() {
     requestAnimationFrame(this.render.bind(this));
 
@@ -48,6 +63,7 @@ class GameBase {
   const game = new GameBase();
 
   game.addCube();
+  game.addLine();
   game.render();
 
   APP.appendChild(game.renderer.domElement);
