@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Text } from 'troika-three-text';
 import { AddTextConfig, TextElement } from './types/Text';
 import { Position } from './types/Common';
@@ -11,6 +12,7 @@ class GameBase {
   elementsIds: number[] = [];
   texts: TextElement[] = [];
   animationsToExecute: AnimationToExecute[] = [];
+  loader: GLTFLoader;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -23,6 +25,7 @@ class GameBase {
     this.camera.position.z = 10;
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.loader = new GLTFLoader();
   }
 
   addElementToScene<ElementType extends THREE.Object3D>(
@@ -108,7 +111,22 @@ class GameBase {
     textMesh.sync();
   }
 
-  addDragon() {}
+  addDragon() {
+    this.loader.load(
+      './assets/black_dragon_with_idle_animation.glb',
+      (gltf) => {
+        this.addElementToScene(gltf.scene, {
+          x: 0,
+          y: -4,
+          z: 0,
+        });
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
 
   executeAnimations() {
     function executeAxesAnimations(
@@ -166,6 +184,9 @@ class GameBase {
 
   game.addCube();
   game.addLine();
+  // Couldn't make this work at the moment
+  // Will try to fix it later
+  // game.addDragon();
   game.render();
 
   APP.appendChild(game.renderer.domElement);
