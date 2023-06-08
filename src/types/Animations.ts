@@ -1,6 +1,6 @@
 import { Position } from './Common';
 
-interface Animation {
+export interface Animation {
   rotation?: Partial<Position>;
   position?: Partial<Position>;
 }

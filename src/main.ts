@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
-import { AddTextConfig } from './types/Text';
+import { AddTextConfig, TextElement } from './types/Text';
 import { Position } from './types/Common';
 import { AnimationToExecute } from './types/Animations';
 
@@ -8,8 +8,8 @@ class GameBase {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
-  elements: number[] = [];
-  texts: string[] = [];
+  elementsIds: number[] = [];
+  texts: TextElement[] = [];
   animationsToExecute: AnimationToExecute[] = [];
 
   constructor() {
@@ -30,7 +30,7 @@ class GameBase {
     position?: Position
   ) {
     this.scene.add(element);
-    this.elements.push(element.id);
+    this.elementsIds.push(element.id);
 
     if (position) {
       element.position.set(position.x, position.y, position.z);
@@ -38,9 +38,11 @@ class GameBase {
   }
 
   addTextToScene(text: Text) {
-    console.log(text);
     this.scene.add(text);
-    this.texts.push(text.uuid);
+    this.texts.push({
+      id: text.uuid,
+      element: text,
+    });
   }
 
   addCube() {
@@ -107,30 +109,39 @@ class GameBase {
   }
 
   executeAnimations() {
+    function executeAxesAnimations(
+      element: THREE.Object3D | Text,
+      animationToExecute: AnimationToExecute
+    ) {
+      if (animationToExecute.animation.rotation) {
+        Object.keys(animationToExecute.animation.rotation).forEach((axis) => {
+          element.rotation[axis] +=
+            animationToExecute?.animation?.rotation?.[axis];
+        });
+      }
+
+      if (animationToExecute.animation.position) {
+        Object.keys(animationToExecute.animation.position).forEach((axis) => {
+          element.position[axis] +=
+            animationToExecute?.animation?.position?.[axis];
+        });
+      }
+    }
+
     this.animationsToExecute.forEach((animationToExecute) => {
       if (typeof animationToExecute.elementId === 'string') {
-        // Is a text, nothing to do yet
+        const element = this.texts.find(
+          (text) => text.id === animationToExecute.elementId
+        )?.element;
+
+        if (element) {
+          executeAxesAnimations(element, animationToExecute);
+        }
       } else {
         const element = this.scene.getObjectById(animationToExecute.elementId);
 
         if (element) {
-          if (animationToExecute.animation.rotation) {
-            Object.keys(animationToExecute.animation.rotation).forEach(
-              (axis) => {
-                element.rotation[axis] +=
-                  animationToExecute?.animation?.rotation?.[axis];
-              }
-            );
-          }
-
-          if (animationToExecute.animation.position) {
-            Object.keys(animationToExecute.animation.position).forEach(
-              (axis) => {
-                element.position[axis] +=
-                  animationToExecute?.animation?.position?.[axis];
-              }
-            );
-          }
+          executeAxesAnimations(element, animationToExecute);
         }
       }
     });
