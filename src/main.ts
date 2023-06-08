@@ -108,6 +108,8 @@ class GameBase {
     textMesh.sync();
   }
 
+  addDragon() {}
+
   executeAnimations() {
     function executeAxesAnimations(
       element: THREE.Object3D | Text,
