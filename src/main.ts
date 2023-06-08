@@ -7,8 +7,8 @@ class GameBase {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
-  elements: THREE.Object3D[] = [];
-  texts: Text[] = [];
+  elements: number[] = [];
+  texts: string[] = [];
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -28,7 +28,7 @@ class GameBase {
     position?: Position
   ) {
     this.scene.add(element);
-    this.elements.push(element);
+    this.elements.push(element.id);
 
     if (position) {
       element.position.set(position.x, position.y, position.z);
@@ -36,8 +36,9 @@ class GameBase {
   }
 
   addTextToScene(text: Text) {
+    console.log(text);
     this.scene.add(text);
-    this.texts.push(text);
+    this.texts.push(text.uuid);
   }
 
   addCube() {
@@ -94,12 +95,12 @@ class GameBase {
   }
 
   render() {
-    requestAnimationFrame(this.render.bind(this));
-
-    this.elements[0].rotation.x += 0.01;
-    this.elements[0].rotation.y += 0.01;
-
-    this.renderer.render(this.scene, this.camera);
+    try {
+      requestAnimationFrame(this.render.bind(this));
+      this.renderer.render(this.scene, this.camera);
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 
