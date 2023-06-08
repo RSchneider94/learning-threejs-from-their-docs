@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Text } from 'troika-three-text';
 import { AddTextConfig } from './types/Text';
 import { Position } from './types/Common';
+import { AnimationToExecute } from './types/Animations';
 
 class GameBase {
   scene: THREE.Scene;
@@ -9,6 +10,7 @@ class GameBase {
   renderer: THREE.Renderer;
   elements: number[] = [];
   texts: string[] = [];
+  animationsToExecute: AnimationToExecute[] = [];
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -55,6 +57,16 @@ class GameBase {
         z: 0,
       },
     });
+
+    this.animationsToExecute.push({
+      elementId: cube.id,
+      animation: {
+        rotation: {
+          x: 0.01,
+          y: 0.01,
+        },
+      },
+    });
   }
 
   addLine() {
@@ -94,9 +106,40 @@ class GameBase {
     textMesh.sync();
   }
 
+  executeAnimations() {
+    this.animationsToExecute.forEach((animationToExecute) => {
+      if (typeof animationToExecute.elementId === 'string') {
+        // Is a text, nothing to do yet
+      } else {
+        const element = this.scene.getObjectById(animationToExecute.elementId);
+
+        if (element) {
+          if (animationToExecute.animation.rotation) {
+            Object.keys(animationToExecute.animation.rotation).forEach(
+              (axis) => {
+                element.rotation[axis] +=
+                  animationToExecute?.animation?.rotation?.[axis];
+              }
+            );
+          }
+
+          if (animationToExecute.animation.position) {
+            Object.keys(animationToExecute.animation.position).forEach(
+              (axis) => {
+                element.position[axis] +=
+                  animationToExecute?.animation?.position?.[axis];
+              }
+            );
+          }
+        }
+      }
+    });
+  }
+
   render() {
     try {
       requestAnimationFrame(this.render.bind(this));
+      this.executeAnimations();
       this.renderer.render(this.scene, this.camera);
     } catch (error) {
       console.error(error);
