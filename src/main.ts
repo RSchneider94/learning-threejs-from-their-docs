@@ -1,10 +1,14 @@
 import * as THREE from 'three';
+import { Text } from 'troika-three-text';
+import { AddTextConfig } from './types/Text';
+import { Position } from './types/Common';
 
 class GameBase {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
   elements: THREE.Object3D[] = [];
+  texts: Text[] = [];
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -14,13 +18,26 @@ class GameBase {
       0.1,
       1000
     );
+    this.camera.position.z = 10;
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  addElementToScene<ElementType extends THREE.Object3D>(element: ElementType) {
+  addElementToScene<ElementType extends THREE.Object3D>(
+    element: ElementType,
+    position?: Position
+  ) {
     this.scene.add(element);
     this.elements.push(element);
+
+    if (position) {
+      element.position.set(position.x, position.y, position.z);
+    }
+  }
+
+  addTextToScene(text: Text) {
+    this.scene.add(text);
+    this.texts.push(text);
   }
 
   addCube() {
@@ -30,7 +47,13 @@ class GameBase {
 
     this.addElementToScene(cube);
 
-    this.camera.position.z = 15;
+    this.addText('This is my first cube', {
+      position: {
+        x: -2,
+        y: 1.5,
+        z: 0,
+      },
+    });
   }
 
   addLine() {
@@ -38,7 +61,7 @@ class GameBase {
     const points: THREE.Vector3[] = [];
 
     points.push(new THREE.Vector3(-10, 0, 0));
-    points.push(new THREE.Vector3(0, 10, 0));
+    points.push(new THREE.Vector3(0, 5, 0));
     points.push(new THREE.Vector3(10, 0, 0));
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -46,6 +69,28 @@ class GameBase {
     const line = new THREE.Line(geometry, material);
 
     this.addElementToScene(line);
+
+    this.addText('This is my first line', {
+      position: {
+        x: -2,
+        y: 6,
+        z: 0,
+      },
+    });
+  }
+
+  addText(text: string, config: AddTextConfig) {
+    const textMesh = new Text();
+    this.addTextToScene(textMesh);
+
+    textMesh.text = text;
+    textMesh.fontSize = config?.fontSize ?? 0.5;
+    textMesh.color = config?.color ?? 0xffffff;
+    textMesh.position.x = config.position.x;
+    textMesh.position.y = config.position.y;
+    textMesh.position.z = config.position.z;
+
+    textMesh.sync();
   }
 
   render() {
